@@ -19,7 +19,7 @@ type Props = {
 
 export const AddTodoForm: React.FC<Props> = ({ onAdd, users }) => {
   const [title, setTitle] = useState('');
-  const [userId, setUserId] = useState<number>(0);
+  const [userId, setUserId] = useState('');
 
   const [errors, setErrors] = useState<Errors>({});
 
@@ -37,7 +37,7 @@ export const AddTodoForm: React.FC<Props> = ({ onAdd, users }) => {
   };
 
   const handleUserIdChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setUserId(Number(event.target.value));
+    setUserId(event.target.value);
 
     if (errors.userId) {
       setErrors(prev => ({ ...prev, userId: false }));
@@ -53,7 +53,7 @@ export const AddTodoForm: React.FC<Props> = ({ onAdd, users }) => {
       newErrors.title = true;
     }
 
-    if (userId === 0) {
+    if (!userId) {
       newErrors.userId = true;
     }
 
@@ -63,14 +63,14 @@ export const AddTodoForm: React.FC<Props> = ({ onAdd, users }) => {
       return;
     }
 
-    onAdd({ title: title.trim(), userId });
+    onAdd({ title: title.trim(), userId: Number(userId) });
 
     setTitle('');
-    setUserId(0);
+    setUserId('');
   };
 
   return (
-    <form onSubmit={handleSubmit} action="/api/todos" method="POST">
+    <form onSubmit={handleSubmit}>
       <div className="field">
         <label htmlFor="title">Title: </label>
         <input
@@ -94,7 +94,7 @@ export const AddTodoForm: React.FC<Props> = ({ onAdd, users }) => {
           onChange={handleUserIdChange}
           data-cy="userSelect"
         >
-          <option value={0} disabled>
+          <option value="" disabled>
             Choose a user
           </option>
           {users.map(user => {
