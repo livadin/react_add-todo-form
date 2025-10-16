@@ -30,26 +30,28 @@ export const App = () => {
   });
 
   const handleAddTodo = ({ title, userId }: TodoDraft) => {
-    const user = usersFromServer.find(u => u.id === userId);
+    const userIdNum = Number(userId);
+    const user = usersFromServer.find(u => u.id === userIdNum);
 
     if (!user) {
       return;
     }
 
-    const nextId =
-      todos.length > 0
-        ? Math.max(...todos.map(todoItem => todoItem.id)) + 1
-        : 1;
+    setTodos(prev => {
+      const nextId =
+        prev.length > 0
+          ? Math.max(...prev.map(todoItem => todoItem.id)) + 1
+          : 1;
+      const newTodo: TodoAgregate = {
+        id: nextId,
+        title,
+        completed: false,
+        userId: userIdNum,
+        user,
+      };
 
-    const newTodo: TodoAgregate = {
-      id: nextId,
-      title,
-      completed: false,
-      userId,
-      user,
-    };
-
-    setTodos(prev => [...prev, newTodo]);
+      return [...prev, newTodo];
+    });
   };
 
   return (
