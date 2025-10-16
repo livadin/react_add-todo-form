@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { User } from '../../types/User';
+import { User } from './types/User';
 import './AddTodoForm.scss';
 
 type Props = {
@@ -25,11 +25,13 @@ export const AddTodoForm = ({ onAdd, users }: Props) => {
 
     if (!title.trim()) {
       alert('Please enter a title');
+
       return;
     }
 
     if (!userId) {
       alert('Please choose a user');
+
       return;
     }
 
