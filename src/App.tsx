@@ -1,67 +1,64 @@
-import React, { useState } from 'react';
+import './App.scss';
+import { TodoList } from './components/TodoList';
+import { TodoAgregate } from './types/TodoAgregate';
 
-import { User } from './types/User';
-import './AddTodoForm.scss';
+import usersFromServer from './api/users';
+import todosFromServer from './api/todos';
+import { AddTodoForm } from './components/AddTodoForm';
+import { useState } from 'react';
 
-type Props = {
-  onAdd: (todo: { title: string; userId: number }) => void;
-  users: User[];
+export type TodoDraft = {
+  title: string;
+  userId: number;
 };
 
-export const AddTodoForm = ({ onAdd, users }: Props) => {
-  const [title, setTitle] = useState('');
-  const [userId, setUserId] = useState('');
+export const App = () => {
+  const [todos, setTodos] = useState<TodoAgregate[]>(() => {
+    const prepared: TodoAgregate[] = [];
 
-  const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(event.target.value);
-  };
+    for (const todo of todosFromServer) {
+      const user = usersFromServer.find(u => u.id === todo.userId);
 
-  const handleUserIdChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setUserId(event.target.value);
-  };
+      if (!user) {
+        continue;
+      }
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
+      prepared.push({ ...todo, user });
+    }
 
-    if (!title.trim()) {
-      alert('Please enter a title');
+    return prepared;
+  });
 
+  const handleAddTodo = ({ title, userId }: TodoDraft) => {
+    const user = usersFromServer.find(u => u.id === userId);
+
+    if (!user) {
       return;
     }
 
-    if (!userId) {
-      alert('Please choose a user');
+    const nextId =
+      todos.length > 0
+        ? Math.max(...todos.map(todoItem => todoItem.id)) + 1
+        : 1;
 
-      return;
-    }
+    const newTodo: TodoAgregate = {
+      id: nextId,
+      title,
+      completed: false,
+      userId,
+      user,
+    };
 
-    onAdd({ title: title.trim(), userId: Number(userId) });
-
-    setTitle('');
-    setUserId('');
+    setTodos(prev => [...prev, newTodo]);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="AddTodoForm">
-      <input
-        type="text"
-        placeholder="Enter title"
-        value={title}
-        onChange={handleTitleChange}
-      />
+    <div className="App">
+      <h1>Add todo form</h1>
 
-      <select value={userId} onChange={handleUserIdChange}>
-        <option value="" disabled>
-          Choose a user
-        </option>
-        {users.map(user => (
-          <option key={user.id} value={user.id}>
-            {user.name}
-          </option>
-        ))}
-      </select>
+      <AddTodoForm onAdd={handleAddTodo} users={usersFromServer} />
 
-      <button type="submit">Add</button>
-    </form>
+      <TodoList todos={todos} />
+    </div>
   );
 };
